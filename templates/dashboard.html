@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+/* DASHBOARD SPECIFIC STYLES */
+.section-title {
+    font-weight: 700;
+    margin-bottom: 30px;
+    color: var(--text-color);
+    letter-spacing: 0.5px;
+}
+.section-title span {
+    color: var(--primary-brand);
+}
+
+/* STAT CARDS */
+.stat-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 20px;
+    border: 1px solid var(--card-border);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+}
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover);
+}
+.stat-value {
+    color: var(--text-color);
+    font-weight: 700;
+}
+
+/* MINI CARDS (Inside Sold Items) */
+.mini-card {
+    background: var(--bg-color); /* Contrasts slightly with the main card */
+    border-radius: 12px;
+    border: 1px solid var(--card-border);
+    overflow: hidden;
+    transition: transform 0.2s ease;
+}
+.mini-card:hover {
+    transform: scale(1.02);
+}
+
+/* AUCTION CARDS (Matches Home Page) */
+.auction-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--card-border);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-shadow: var(--shadow-sm);
+}
+.auction-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-hover);
+}
+.auction-img {
+    height: 200px;
+    object-fit: cover;
+    border-bottom: 1px solid var(--card-border);
+}
+
+/* CUSTOM LIST STYLING */
+.custom-list-item {
+    background: var(--bg-color);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    color: var(--text-color);
+    font-weight: 500;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+</style>
+
+<div class="container mt-4">
+
+    <h2 class="text-center section-title mb-5">📊 <span>My Dashboard</span></h2>
+
+    <div class="row mb-5 g-4">
+        
+        <div class="col-md-4">
+            <div class="stat-card p-4 text-center">
+                <h5 class="fw-bold mb-3" style="color: var(--primary-brand);">📦 Items Sold</h5>
+                <p class="display-5 stat-value mb-4">{{ sold_items|length }}</p>
+
+                {% if sold_items %}
+                <div class="mt-3 text-start">
+                    {% for item in sold_items %}
+                    <div class="mini-card mb-3 shadow-sm">
+                        {% if item.image %}
+                        <img src="{{ item.image.url }}" class="w-100" style="height:120px; object-fit:cover;">
+                        {% endif %}
+                        <div class="p-3">
+                            <h6 class="fw-bold mb-2">{{ item.title }}</h6>
+                            <p class="mb-1 text-muted fs-6">💰 Sold for: <span style="color: var(--primary-brand); font-weight: 600;">₹{{ item.highest_bid.amount }}</span></p>
+                            <p class="mb-0 fs-6" style="color: #10b981;">👤 Buyer: {{ item.highest_bid.user.username }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted mt-3">No items sold yet.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="stat-card p-4 text-center">
+                <h5 class="fw-bold mb-3" style="color: #10b981;">🏆 Items Won</h5>
+                <p class="display-5 stat-value mb-4">{{ won_items|length }}</p>
+                
+                {% if won_items %}
+                <div class="mt-3">
+                    {% for item in won_items %}
+                    <div class="custom-list-item shadow-sm">
+                        <span class="text-truncate me-2">🎁 {{ item.title }}</span>
+                        <span style="color: var(--primary-brand); font-weight: 600;">₹{{ item.highest_bid.amount }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted mt-3">No items won yet.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="stat-card p-4 text-center d-flex flex-column justify-content-center">
+                <h5 class="fw-bold mb-3" style="color: #f59e0b;">💳 Total Earned</h5>
+                <p class="display-5 stat-value text-break">₹{{ total_earned }}</p>
+            </div>
+        </div>
+        
+    </div>
+
+    <hr style="border-color: var(--card-border); margin: 50px 0;">
+    <h3 class="section-title text-start mb-4">📝 My <span>Active Auctions</span></h3>
+    
+    <div class="row mb-5 g-4">
+        {% for item in active_items %}
+        <div class="col-md-4">
+            <div class="auction-card">
+
+                {% if item.image %}
+                <img src="{{ item.image.url }}" class="w-100 auction-img">
+                {% else %}
+                <img src="https://via.placeholder.com/300" class="w-100 auction-img">
+                {% endif %}
+
+                <div class="p-4 d-flex flex-column flex-grow-1">
+                    <h5 class="fw-bold mb-2">{{ item.title }}</h5>
+                    <p class="text-muted mb-3">{{ item.description|truncatewords:10 }}</p>
+                    <div class="fw-bold fs-5 mb-3" style="color: var(--primary-brand);">₹{{ item.starting_price }}</div>
+
+                    <div class="mt-auto pt-2">
+                        <a href="{% url 'item_detail' item.id %}" class="btn btn-primary w-100 py-2">
+                            View Item
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="stat-card p-5 text-center">
+                <p class="text-muted fs-5 mb-0">You have no active auctions listed.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <h3 class="section-title text-start mb-4">🏆 <span>Won Auctions</span></h3>
+    
+    <div class="row mb-5 g-4">
+        {% for item in won_items %}
+        <div class="col-md-4">
+            <div class="auction-card">
+
+                {% if item.image %}
+                <img src="{{ item.image.url }}" class="w-100 auction-img">
+                {% else %}
+                <img src="https://via.placeholder.com/300" class="w-100 auction-img">
+                {% endif %}
+
+                <div class="p-4 d-flex flex-column flex-grow-1">
+                    <h5 class="fw-bold mb-2">{{ item.title }}</h5>
+                    <p class="text-muted mb-3">{{ item.description|truncatewords:10 }}</p>
+                    
+                    <div class="mt-auto">
+                        <div class="custom-list-item mb-0 text-center justify-content-center" style="background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.2); color: #10b981;">
+                            🎉 Won for ₹{{ item.highest_bid.amount }}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="stat-card p-5 text-center">
+                <p class="text-muted fs-5 mb-0">You have not won any auctions yet.</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+{% endblock %}

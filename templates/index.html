@@ -1,0 +1,236 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<style>
+/* SECTION TITLE */
+.section-title {
+    text-align: center;
+    font-weight: 700;
+    margin-bottom: 40px;
+    color: var(--text-color);
+    letter-spacing: 0.5px;
+}
+.section-title span {
+    color: var(--primary-brand);
+}
+
+/* CARD DESIGN */
+.auction-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid var(--card-border);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-shadow: var(--shadow-sm);
+}
+
+.auction-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-hover);
+}
+
+/* IMAGE */
+.auction-img {
+    height: 220px;
+    object-fit: cover;
+    border-bottom: 1px solid var(--card-border);
+}
+
+/* PRICE */
+.price {
+    color: var(--primary-brand);
+    font-weight: 700;
+    font-size: 20px;
+}
+
+/* TIMER */
+.timer-text {
+    font-size: 13px;
+    font-weight: 600;
+    color: #ef4444; /* Modern red */
+    background: rgba(239, 68, 68, 0.1);
+    padding: 6px 12px;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+/* WINNER BOX */
+.winner-box {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+    font-size: 14px;
+    color: #10b981; /* Modern success green */
+    font-weight: 500;
+}
+
+/* NO BID */
+.no-bid {
+    background: rgba(108, 117, 125, 0.05);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* YOU WON */
+.you-won {
+    background: rgba(255, 106, 0, 0.1);
+    border: 1px solid rgba(255, 106, 0, 0.3);
+    border-radius: 12px;
+    padding: 10px;
+    text-align: center;
+    font-size: 14px;
+    color: var(--primary-brand);
+    font-weight: 600;
+}
+</style>
+
+<div class="container mt-4">
+
+<h2 class="section-title"> <span>Live</span> Auctions</h2>
+
+<div class="row">
+
+{% for item in items %}
+
+<div class="col-md-4 mb-4 d-flex">
+
+<div class="auction-card w-100">
+
+    {% if item.image %}
+    <img src="{{ item.image.url }}" class="w-100 auction-img" alt="{{ item.title }}">
+    {% else %}
+    <img src="https://via.placeholder.com/300" class="w-100 auction-img" alt="Placeholder">
+    {% endif %}
+
+    <div class="p-4 d-flex flex-column flex-grow-1">
+
+        <h5 class="fw-bold mb-2">{{ item.title }}</h5>
+
+        <p class="text-muted mb-3">
+            {{ item.description|truncatewords:10 }}
+        </p>
+
+        <div class="price mb-3">
+            ₹{{ item.starting_price }}
+        </div>
+
+        <div class="mb-3">
+            <div class="timer-text">
+                ⏳ Ends in:
+                <span class="timer" data-time="{{ item.end_time|date:'c' }}"></span>
+            </div>
+        </div>
+
+        {% if item.is_expired %}
+            
+            {% if item.winner %}
+                <div class="winner-box mb-3">
+                    🏆 Winner: <strong>{{ item.winner.user.username }}</strong><br>
+                    <span class="mt-1 d-inline-block">💰 ₹{{ item.winner.amount }}</span>
+                </div>
+
+                {% if item.winner.user == user %}
+                    <div class="you-won mb-3">
+                        🎉 You won this auction!
+                    </div>
+                {% endif %}
+
+            {% else %}
+                <div class="no-bid mb-3">
+                    No bids placed
+                </div>
+            {% endif %}
+
+        {% endif %}
+
+        <div class="mt-auto pt-2">
+
+            {% if item.is_expired %}
+                <button class="btn btn-secondary w-100 py-2" disabled>
+                    ⏳ Auction Ended
+                </button>
+
+            {% else %}
+                {% if user.is_authenticated %}
+                    <a href="{% url 'item_detail' item.id %}" class="btn btn-primary w-100 py-2">
+                        View Item
+                    </a>
+                {% else %}
+                    <button class="btn btn-warning w-100 py-2 fw-bold" data-bs-toggle="modal" data-bs-target="#loginModal">
+                        🔒 Login to View
+                    </button>
+                {% endif %}
+            {% endif %}
+
+        </div>
+
+    </div>
+
+</div>
+
+</div>
+
+{% empty %}
+<div class="col-12">
+    <p class="text-center text-muted fs-5 mt-5">No auction items available at the moment.</p>
+</div>
+{% endfor %}
+
+</div>
+
+</div>
+
+<script>
+document.querySelectorAll('.timer').forEach(function(el) {
+
+    var endTime = new Date(el.getAttribute('data-time')).getTime();
+
+    function updateTimer() {
+        var now = new Date().getTime();
+        var distance = endTime - now;
+
+        if (distance <= 0) {
+            el.innerHTML = "Ended";
+
+            let card = el.closest('.auction-card');
+            let btn = card.querySelector('a, button');
+
+            if (btn) {
+                btn.innerHTML = "⏳ Auction Ended";
+                btn.classList.remove('btn-primary', 'btn-warning');
+                btn.classList.add('btn-secondary');
+                btn.disabled = true;
+                btn.style.pointerEvents = "none";
+            }
+
+            card.style.opacity = "0.6";
+            return;
+        }
+
+        var hours = Math.floor(distance / (1000 * 60 * 60));
+        var minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        var seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        el.innerHTML = hours + "h " + minutes + "m " + seconds + "s";
+    }
+
+    updateTimer();
+    setInterval(updateTimer, 1000);
+});
+</script>
+
+{% endblock %}

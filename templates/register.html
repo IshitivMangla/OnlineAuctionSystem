@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<style>
+/* AUTHENTICATION SPECIFIC STYLES (Matches Login Page) */
+.auth-wrapper {
+    min-height: 75vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 450px; /* Slightly wider for register */
+    background: var(--card-bg);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-radius: 20px;
+    border: 1px solid var(--card-border);
+    padding: 40px 30px;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.auth-card:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-3px);
+}
+
+/* FORM ELEMENTS */
+.form-label {
+    color: var(--text-color);
+    font-size: 0.95rem;
+    letter-spacing: 0.3px;
+    margin-bottom: 8px;
+}
+.auth-input {
+    background-color: var(--input-bg) !important;
+    color: var(--input-text) !important;
+    border: 1px solid var(--input-border);
+    border-radius: 12px;
+    padding: 12px 15px;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+.auth-input:focus {
+    border-color: var(--primary-brand);
+    box-shadow: 0 0 0 3px rgba(255, 106, 0, 0.2);
+    outline: none;
+}
+
+/* SEAMLESS INPUT GROUP */
+.custom-input-group {
+    display: flex;
+    align-items: center;
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+.custom-input-group:focus-within {
+    border-color: var(--primary-brand);
+    box-shadow: 0 0 0 3px rgba(255, 106, 0, 0.2);
+}
+.custom-input-group input {
+    border: none;
+    box-shadow: none;
+    background: transparent !important;
+    border-radius: 0;
+    margin-bottom: 0;
+}
+.custom-input-group input:focus {
+    box-shadow: none;
+}
+.password-toggle-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    padding: 0 15px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+.password-toggle-btn:hover {
+    color: var(--primary-brand);
+}
+
+/* ALERT */
+.alert-custom-danger {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+/* LINKS */
+.auth-link {
+    color: var(--primary-brand);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+.auth-link:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
+}
+</style>
+
+<div class="container auth-wrapper mt-4 mb-5">
+
+    <div class="auth-card">
+
+        <div class="text-center mb-4">
+            <h3 class="fw-bold mb-2" style="color: var(--primary-brand);">📝 Create Account</h3>
+            <p class="text-muted small">Join Auctify and start bidding today.</p>
+        </div>
+
+        {% if form.errors %}
+        <div class="alert alert-custom-danger p-3 mb-4 text-center">
+            {{ form.errors }}
+        </div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="mb-4">
+                <label class="form-label fw-bold">👤 Username</label>
+                <input type="text" name="username" class="auth-input" placeholder="Choose a username" required>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold">🔑 Password</label>
+                <div class="custom-input-group">
+                    <input type="password" name="password1" id="password1" class="auth-input" placeholder="Create a password" required>
+                    <button type="button" class="password-toggle-btn" onclick="togglePassword('password1')" title="Toggle Password Visibility">👁</button>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold">🔐 Confirm Password</label>
+                <div class="custom-input-group">
+                    <input type="password" name="password2" id="password2" class="auth-input" placeholder="Confirm your password" required>
+                    <button type="button" class="password-toggle-btn" onclick="togglePassword('password2')" title="Toggle Password Visibility">👁</button>
+                </div>
+            </div>
+
+            <div class="d-grid mt-5 mb-3">
+                <button type="submit" class="btn btn-primary py-3 fs-6 fw-bold shadow-sm" style="border-radius: 12px;">
+                    🚀 Register
+                </button>
+            </div>
+
+        </form>
+
+        <p class="text-center mt-4 mb-0 text-muted">
+            Already have an account?
+            <a href="{% url 'login' %}" class="auth-link">Login here</a>
+        </p>
+
+    </div>
+
+</div>
+
+<script>
+function togglePassword(id) {
+    var field = document.getElementById(id);
+    field.type = field.type === "password" ? "text" : "password";
+}
+</script>
+
+{% endblock %}

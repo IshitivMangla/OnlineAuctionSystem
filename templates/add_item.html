@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<style>
+/* FORM SPECIFIC STYLES */
+.form-label {
+    color: var(--text-color);
+    font-size: 0.95rem;
+    letter-spacing: 0.3px;
+    margin-bottom: 8px;
+}
+
+/* Ensure Django's default inputs stretch to 100% width */
+.django-form-wrapper input,
+.django-form-wrapper textarea,
+.django-form-wrapper select {
+    width: 100%;
+    display: block;
+}
+
+/* Custom Image Upload Wrapper */
+.image-upload-box {
+    border: 1px dashed var(--input-border);
+    background: var(--input-bg);
+    border-radius: 12px;
+    padding: 10px;
+    transition: all 0.3s ease;
+}
+.image-upload-box:hover {
+    border-color: var(--primary-brand);
+}
+
+/* Elegant Error Alerts */
+.error-text {
+    color: #ef4444; /* Modern red */
+    font-size: 0.85rem;
+    margin-top: 6px;
+    font-weight: 500;
+}
+.alert-custom {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border-radius: 12px;
+    font-weight: 500;
+}
+</style>
+
+<div class="container mt-4 mb-5">
+
+    <div class="card p-4 p-md-5 mx-auto" style="max-width: 650px;">
+        
+        <div class="text-center mb-5">
+            <h2 class="fw-bold" style="color: var(--primary-brand);">➕ Add Auction Item</h2>
+            <p class="text-muted">Fill in the details below to list your item for bidding.</p>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" class="django-form-wrapper">
+            {% csrf_token %}
+
+            {% if form.non_field_errors %}
+            <div class="alert alert-custom p-3 mb-4">
+                {{ form.non_field_errors }}
+            </div>
+            {% endif %}
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold">📌 Title</label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                    <div class="error-text">{{ form.title.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold">📝 Description</label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                    <div class="error-text">{{ form.description.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <label class="form-label fw-semibold">💰 Starting Price (₹)</label>
+                    {{ form.starting_price }}
+                    {% if form.starting_price.errors %}
+                        <div class="error-text">{{ form.starting_price.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-6 mb-4">
+                    <label class="form-label fw-semibold">⏳ End Time</label>
+                    {{ form.end_time }}
+                    {% if form.end_time.errors %}
+                        <div class="error-text">{{ form.end_time.errors }}</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold">📸 Upload Image</label>
+                <div class="image-upload-box">
+                    {{ form.image }}
+                </div>
+                {% if form.image.errors %}
+                    <div class="error-text">{{ form.image.errors }}</div>
+                {% endif %}
+            </div>
+
+            <div class="text-center mt-5">
+                <button type="submit" class="btn btn-primary w-100 py-3 fs-5 fw-bold shadow-sm">
+                    🚀 List Item for Auction
+                </button>
+            </div>
+
+        </form>
+    </div>
+
+</div>
+
+{% endblock %}
